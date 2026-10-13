@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "shadcn/tailwind.css";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -58,19 +59,19 @@
 }
 
 .dark {
-  --background: #0b1220;
-  --foreground: #e2e8f0;
-  --card: #111827;
-  --card-foreground: #e2e8f0;
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #121212;
+  --card-foreground: #ededed;
+  --popover: #141414;
+  --popover-foreground: #ededed;
 
   --primary: #22c55e;
   --primary-foreground: #052e16;
-  --secondary: #1e293b;
-  --secondary-foreground: #e2e8f0;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #ededed;
+  --muted: #1f1f1f;
+  --muted-foreground: #a3a3a3;
   --accent: #0f2a1b;
   --accent-foreground: #bbf7d0;
 
@@ -79,8 +80,8 @@
   --destructive-muted: #2a1213;
   --destructive-muted-foreground: #fca5a5;
 
-  --border: #263244;
-  --input: #334155;
+  --border: #262626;
+  --input: #3a3a3a;
   --ring: #22c55e;
 
   --success: #22c55e;
@@ -98,13 +99,13 @@
   --info-muted: #0f1d3a;
   --info-muted-foreground: #93c5fd;
 
-  --sidebar: #0d1520;
-  --sidebar-foreground: #cbd5e1;
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #d4d4d4;
   --sidebar-primary: #22c55e;
   --sidebar-primary-foreground: #052e16;
   --sidebar-accent: #0f2a1b;
   --sidebar-accent-foreground: #bbf7d0;
-  --sidebar-border: #1f2a3a;
+  --sidebar-border: #232323;
   --sidebar-ring: #22c55e;
 }
 
@@ -214,7 +215,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground antialiased;

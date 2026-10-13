@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UniExam Admin
 
-## Getting Started
+Administration workspace for [UniExam](https://github.com/debrahseth/UniExam), the KNUST examination simulation platform. This is a separate application from the student app. It will share the same Supabase project (auth and data) and has no database of its own.
 
-First, run the development server:
+## Status: Milestone 1A (UI foundation)
+
+Built so far: design system, app shell, placeholder routes and system states.
+
+Not built yet, and deliberately absent:
+
+- Supabase connection, migrations and any data access
+- Authentication and the Super Admin identity
+- Role assignment, authorization checks and the audit log
+
+These belong to Milestone 1B. Until then, the admin UI only renders when the preview flag is on, and no page reads or changes data.
+
+## Stack
+
+Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS v4, shadcn/ui (base-nova style, Base UI), lucide icons, Inter via `next/font`. Package manager: npm.
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # then set ADMIN_PREVIEW_ENABLED=true for local preview
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`. With the preview flag on, `/` redirects to `/admin`. With the flag off or missing, the app shows a closed page and every `/admin` route returns 404.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable                | Purpose                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `ADMIN_PREVIEW_ENABLED` | Server-only. Must be exactly `true` to render the admin UI. Leave unset or `false` in any deployed environment. |
 
-## Learn More
+Milestone 1A needs no secrets. Never put a service-role key in a `NEXT_PUBLIC_` variable.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command             | Does               |
+| ------------------- | ------------------ |
+| `npm run dev`       | Development server |
+| `npm run build`     | Production build   |
+| `npm run lint`      | ESLint             |
+| `npm run typecheck` | `tsc --noEmit`     |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
+```
+src/
+  app/
+    (admin)/            Admin route group: gated layout, loading, error
+      admin/            /admin and placeholder routes
+    page.tsx            Entry: redirect in preview, closed page otherwise
+    not-found.tsx
+  components/
+    shell/              Sidebar, header, breadcrumbs, page header, state messages
+    ui/                 shadcn components
+  config/               App identity and navigation
+  hooks/
+  lib/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`AI_AGENT_RULES.md`](./AI_AGENT_RULES.md): rules every contributor and AI agent must follow
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md): boundaries, routing, security model
+- [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): tokens, typography, components
