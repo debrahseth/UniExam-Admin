@@ -12,7 +12,6 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  // Never render error.message: it can carry internal details.
   return (
     <StateMessage
       icon={TriangleAlert}
