@@ -59,7 +59,7 @@ new_funcs as (select unnest(array[
   'admin_block_trg','admin_audit_chain_trg','admin_users_guard_trg','admin_users_require_audit_trg',
   'admin_get_my_access','admin_grant_role','admin_change_role','admin_suspend','admin_reactivate',
   'admin_revoke','admin_list_admins','admin_list_audit','admin_bootstrap_super_admin',
-  'admin_verify_audit_chain']) as n),
+  'admin_verify_audit_chain','admin_find_user_by_email']) as n),
 parts as (
   select 'rel:' || c.relname || ':' || c.relkind::text || ':' || c.relrowsecurity::text || ':' || coalesce(c.relacl::text, '') as s
     from pg_class c
@@ -131,7 +131,7 @@ select p.proname,
        has_function_privilege('authenticated', p.oid, 'execute') as authenticated,
        has_function_privilege('service_role', p.oid, 'execute')  as service_role,
        p.proname in ('admin_get_my_access','admin_grant_role','admin_change_role','admin_suspend',
-                     'admin_reactivate','admin_revoke','admin_list_admins','admin_list_audit') as app_callable
+                     'admin_reactivate','admin_revoke','admin_list_admins','admin_list_audit','admin_find_user_by_email') as app_callable
 from pg_proc p
 where p.pronamespace = 'public'::regnamespace and p.proname like 'admin\_%' escape '\'
 order by app_callable desc, p.proname;
