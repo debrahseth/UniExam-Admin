@@ -18,17 +18,24 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { appConfig } from "@/config/app";
-import { navigation } from "@/config/navigation";
+import { navigation, type AdminRole } from "@/config/navigation";
 
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebar() {
+export function AppSidebar({ role }: { role: AdminRole }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const closeMobile = () => setOpenMobile(false);
+
+  const groups = navigation
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.roles.includes(role)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <Sidebar collapsible="icon">
@@ -56,7 +63,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {navigation.map((group) => (
+        {groups.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -80,8 +87,8 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <p className="type-helper text-muted-foreground px-2 group-data-[collapsible=icon]:hidden">
-          Preview build. No session, no data.
+        <p className="type-helper text-muted-foreground px-2 capitalize group-data-[collapsible=icon]:hidden">
+          Role: {role.replace(/_/g, " ")}
         </p>
       </SidebarFooter>
       <SidebarRail />
