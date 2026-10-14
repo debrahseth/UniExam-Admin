@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { signOut } from "@/app/sign-in/actions";
+import { signOut } from "@/features/sign-in/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,

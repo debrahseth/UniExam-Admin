@@ -7,6 +7,7 @@ Source of truth: `src/app/globals.css`. Components come from shadcn (base-nova s
 - Calm and functional. This is a working tool, not a marketing site.
 - Colour carries meaning. Green is the brand and primary action; status colours are reserved for status.
 - Never rely on colour alone. Pair status colour with text or an icon.
+- Admin status is always shown as a text badge (Active, Suspended, Revoked), never as colour alone.
 - Use tokens, never raw hex values, in components.
 
 ## Colour tokens
@@ -50,12 +51,14 @@ Base radius `--radius: 0.5rem`, with `rounded-sm`, `md`, `lg` and `xl` derived f
 
 `avatar`, `badge`, `breadcrumb`, `button`, `card`, `dialog`, `dropdown-menu`, `input`, `label`, `separator`, `sheet`, `sidebar`, `skeleton`, `table`, `tooltip`.
 
+shadcn's `select` and `textarea` are not installed. `NativeSelect` and `TextArea` in `src/components/shell/form-fields.tsx` match the `Input` styling and keep native keyboard and screen-reader behaviour.
+
 Project components in `src/components/shell`:
 
 - `PageHeader`: title, description, optional actions
 - `PlaceholderPage`: "Not implemented" page for routes without features yet
 - `StateMessage`: centred message for not-found, error, forbidden and closed states
-- `ForbiddenState`: access-denied message (not routed until 1B)
+- `ForbiddenState`: access-denied message, shown by pages restricted to a role (cosmetic only: the database enforces access)
 
 Base UI uses a `render` prop where Radix-based shadcn uses `asChild`. For links styled as buttons, use `buttonVariants()` on a `Link`.
 
@@ -70,6 +73,10 @@ All elements get a visible outline via `outline-ring`. Do not remove outlines wi
 ## Dark mode
 
 Dark tokens exist, but nothing switches them on yet. Enabling it needs `next-themes` and `suppressHydrationWarning` on `<html>`. Not part of Milestone 1A.
+
+## Dates and times
+
+Use `formatUtc()` from `src/lib/format.ts`. It uses a fixed locale and the UTC time zone so server and browser render identical text, and labels the result UTC.
 
 ## Error copy
 

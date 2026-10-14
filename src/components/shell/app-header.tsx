@@ -1,13 +1,12 @@
-import { signOut } from "@/app/sign-in/actions";
 import { AppBreadcrumbs } from "@/components/shell/app-breadcrumbs";
+import { SignOutButton } from "@/components/shell/sign-out-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function AppHeader({ email }: { email: string | null }) {
   return (
-    <header className="bg-background flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 supports-backdrop-filter:backdrop-blur">
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
@@ -20,11 +19,7 @@ export function AppHeader({ email }: { email: string | null }) {
             <span className="truncate">{email}</span>
           </Badge>
         ) : null}
-        <form action={signOut}>
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
-          </Button>
-        </form>
+        <SignOutButton />
       </div>
     </header>
   );

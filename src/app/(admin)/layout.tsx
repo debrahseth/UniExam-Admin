@@ -20,7 +20,7 @@ export default async function AdminLayout({
   return (
     <SidebarProvider>
       <AppSidebar role={access.role} />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <AppHeader email={email} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>

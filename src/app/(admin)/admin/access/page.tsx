@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { ShieldCheckIcon } from "lucide-react";
 
 import { ForbiddenState } from "@/components/shell/forbidden-state";
 import { PageHeader } from "@/components/shell/page-header";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -14,6 +16,7 @@ import { isAdminRole, isAdminStatus } from "@/lib/admin-roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { AdminsTable } from "@/features/access/admins-table";
+import { InlineMessage } from "@/features/access/inline-message";
 import { LookupGrant } from "@/features/access/lookup-grant";
 import type { AdminRow } from "@/features/access/types";
 
@@ -63,21 +66,34 @@ export default async function AccessPage() {
 
       <LookupGrant />
 
-      <Card>
+      <Card className="[--card-spacing:--spacing(5)]">
         <CardHeader>
-          <CardTitle className="type-card-title">Administrators</CardTitle>
+          <CardTitle className="type-card-title flex items-center gap-2">
+            <ShieldCheckIcon
+              aria-hidden="true"
+              className="size-4 text-primary"
+            />
+            Administrators
+          </CardTitle>
           <CardDescription>
             Roles and status are read live from the database.
           </CardDescription>
+          {admins ? (
+            <CardAction>
+              <span className="type-meta text-muted-foreground tabular-nums">
+                {admins.length} total
+              </span>
+            </CardAction>
+          ) : null}
         </CardHeader>
         <CardContent>
           {admins ? (
             <AdminsTable admins={admins} />
           ) : (
-            <p role="alert" className="type-body text-muted-foreground">
+            <InlineMessage tone="error" role="alert">
               The administrator list could not be loaded. Reload the page. If
               this keeps happening, sign out and sign in again.
-            </p>
+            </InlineMessage>
           )}
         </CardContent>
       </Card>

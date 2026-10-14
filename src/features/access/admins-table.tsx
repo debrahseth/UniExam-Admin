@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontalIcon } from "lucide-react";
+import { LoaderCircleIcon, LockIcon, MoreHorizontalIcon } from "lucide-react";
 import { useState, useTransition, type FormEvent } from "react";
 
 import { NativeSelect, TextArea } from "@/components/shell/form-fields";
@@ -38,18 +38,26 @@ import {
 import { formatUtc } from "@/lib/format";
 
 import { manageAdmin } from "./actions";
+import { InlineMessage } from "./inline-message";
 import type { AdminRow, ManageIntent } from "./types";
 
 type Pending = { intent: ManageIntent; admin: AdminRow };
 
-const STATUS_BADGE: Record<
-  AdminStatus,
-  { label: string; variant: "default" | "outline" | "destructive" }
-> = {
-  active: { label: "Active", variant: "default" },
-  suspended: { label: "Suspended", variant: "outline" },
-  revoked: { label: "Revoked", variant: "destructive" },
-};
+const STATUS_BADGE: Record<AdminStatus, { label: string; className: string }> =
+  {
+    active: {
+      label: "Active",
+      className: "bg-success-muted text-success-muted-foreground",
+    },
+    suspended: {
+      label: "Suspended",
+      className: "bg-warning-muted text-warning-muted-foreground",
+    },
+    revoked: {
+      label: "Revoked",
+      className: "bg-destructive-muted text-destructive-muted-foreground",
+    },
+  };
 
 const COPY: Record<
   ManageIntent,
@@ -128,8 +136,10 @@ function ManageForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-4" noValidate>
       <DialogHeader>
-        <DialogTitle>{copy.title}</DialogTitle>
-        <DialogDescription>{copy.description(admin.email)}</DialogDescription>
+        <DialogTitle className="pr-8">{copy.title}</DialogTitle>
+        <DialogDescription className="leading-relaxed">
+          {copy.description(admin.email)}
+        </DialogDescription>
       </DialogHeader>
 
       <input type="hidden" name="intent" value={intent} />
@@ -145,6 +155,7 @@ function ManageForm({
             name="role"
             defaultValue={roles[0]}
             disabled={busy}
+            className="h-9!"
           >
             {roles.map((role) => (
               <option key={role} value={role}>
@@ -166,16 +177,20 @@ function ManageForm({
           maxLength={500}
           required
           disabled={busy}
+          aria-describedby="manage-reason-help"
         />
-        <p className="type-helper text-muted-foreground">
+        <p
+          id="manage-reason-help"
+          className="type-helper text-muted-foreground"
+        >
           10 to 500 characters.
         </p>
       </div>
 
       {error ? (
-        <p role="alert" className="type-helper text-destructive">
+        <InlineMessage tone="error" role="alert">
           {error}
-        </p>
+        </InlineMessage>
       ) : null}
 
       <DialogFooter>
@@ -188,7 +203,11 @@ function ManageForm({
           type="submit"
           variant={copy.destructive ? "destructive" : "default"}
           disabled={busy}
+          aria-busy={busy}
         >
+          {busy ? (
+            <LoaderCircleIcon aria-hidden="true" className="animate-spin" />
+          ) : null}
           {busy ? "Working…" : copy.submit}
         </Button>
       </DialogFooter>
@@ -201,91 +220,113 @@ export function AdminsTable({ admins }: { admins: AdminRow[] }) {
   const [notice, setNotice] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {notice ? (
-        <p role="status" className="type-helper text-muted-foreground">
+        <InlineMessage tone="success" role="status">
           {notice}
-        </p>
+        </InlineMessage>
       ) : null}
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Added</TableHead>
-            <TableHead className="w-12">
-              <span className="sr-only">Actions</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {admins.map((admin) => {
-            const badge = STATUS_BADGE[admin.status];
-            const intents =
-              admin.role === "super_admin" ? [] : intentsFor(admin.status);
+      <div className="overflow-hidden rounded-lg border">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="type-meta h-9 px-3 text-muted-foreground">
+                Email
+              </TableHead>
+              <TableHead className="type-meta h-9 px-3 text-muted-foreground">
+                Role
+              </TableHead>
+              <TableHead className="type-meta h-9 px-3 text-muted-foreground">
+                Status
+              </TableHead>
+              <TableHead className="type-meta h-9 px-3 text-muted-foreground">
+                Added
+              </TableHead>
+              <TableHead className="h-9 w-14 px-3 text-right">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {admins.map((admin) => {
+              const badge = STATUS_BADGE[admin.status];
+              const intents =
+                admin.role === "super_admin" ? [] : intentsFor(admin.status);
 
-            return (
-              <TableRow key={admin.userId}>
-                <TableCell className="type-table">{admin.email}</TableCell>
-                <TableCell className="type-table">
-                  {ROLE_LABELS[admin.role]}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={badge.variant}>{badge.label}</Badge>
-                </TableCell>
-                <TableCell className="type-table">
-                  {formatUtc(admin.createdAt)}
-                </TableCell>
-                <TableCell>
-                  {admin.role === "super_admin" ? (
-                    <span className="type-helper text-muted-foreground">
-                      Protected
-                    </span>
-                  ) : intents.length > 0 ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Actions for ${admin.email}`}
-                          />
-                        }
-                      >
-                        <MoreHorizontalIcon />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {intents.map((intent) => (
-                          <DropdownMenuItem
-                            key={intent}
-                            variant={
-                              intent === "suspend" || intent === "revoke"
-                                ? "destructive"
-                                : "default"
-                            }
-                            onClick={() => {
-                              setNotice(null);
-                              setPending({ intent, admin });
-                            }}
-                          >
-                            {COPY[intent].menu}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <span className="type-helper text-muted-foreground">
-                      Grant again above
-                    </span>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+              return (
+                <TableRow key={admin.userId}>
+                  <TableCell className="type-table px-3 py-2.5 font-medium">
+                    {admin.email}
+                  </TableCell>
+                  <TableCell className="type-table px-3 py-2.5">
+                    {ROLE_LABELS[admin.role]}
+                  </TableCell>
+                  <TableCell className="px-3 py-2.5">
+                    <Badge
+                      variant="secondary"
+                      className={`gap-1.5 ${badge.className}`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="size-1.5 rounded-full bg-current"
+                      />
+                      {badge.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="type-table px-3 py-2.5 text-muted-foreground tabular-nums">
+                    {formatUtc(admin.createdAt)}
+                  </TableCell>
+                  <TableCell className="px-3 py-2.5 text-right">
+                    {admin.role === "super_admin" ? (
+                      <span className="type-helper inline-flex items-center gap-1 text-muted-foreground">
+                        <LockIcon aria-hidden="true" className="size-3" />
+                        Protected
+                      </span>
+                    ) : intents.length > 0 ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`Actions for ${admin.email}`}
+                            />
+                          }
+                        >
+                          <MoreHorizontalIcon />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-40">
+                          {intents.map((intent) => (
+                            <DropdownMenuItem
+                              key={intent}
+                              variant={
+                                intent === "suspend" || intent === "revoke"
+                                  ? "destructive"
+                                  : "default"
+                              }
+                              onClick={() => {
+                                setNotice(null);
+                                setPending({ intent, admin });
+                              }}
+                            >
+                              {COPY[intent].menu}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <span className="type-helper text-muted-foreground">
+                        Grant again above
+                      </span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
 
       <Dialog
         open={pending !== null}
@@ -293,7 +334,7 @@ export function AdminsTable({ admins }: { admins: AdminRow[] }) {
           if (!open) setPending(null);
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           {pending ? (
             <ManageForm
               key={`${pending.admin.userId}:${pending.intent}`}

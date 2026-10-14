@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import {
+  LoaderCircleIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  UserPlusIcon,
+} from "lucide-react";
+import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 
 import { NativeSelect, TextArea } from "@/components/shell/form-fields";
 import { Button } from "@/components/ui/button";
@@ -17,6 +23,7 @@ import { ASSIGNABLE_ROLES, ROLE_LABELS } from "@/lib/admin-roles";
 import { formatUtc } from "@/lib/format";
 
 import { findUser, grantAdmin } from "./actions";
+import { InlineMessage } from "./inline-message";
 import type { FoundUser, LookupResult } from "./types";
 
 function blockedReason(user: FoundUser): string | null {
@@ -33,6 +40,25 @@ function blockedReason(user: FoundUser): string | null {
     return `This account is already an administrator (${role}, ${user.accessStatus}). Manage it from the table below.`;
   }
   return null;
+}
+
+function SummaryRow({
+  label,
+  children,
+  breakAll = false,
+}: {
+  label: string;
+  children: ReactNode;
+  breakAll?: boolean;
+}) {
+  return (
+    <div className="grid gap-0.5 sm:grid-cols-[7rem_1fr] sm:gap-x-4">
+      <dt className="type-body text-muted-foreground">{label}</dt>
+      <dd className={`type-body ${breakAll ? "font-medium break-all" : ""}`}>
+        {children}
+      </dd>
+    </div>
+  );
 }
 
 export function LookupGrant() {
@@ -73,10 +99,13 @@ export function LookupGrant() {
   const blocked = user ? blockedReason(user) : null;
 
   return (
-    <Card>
+    <Card className="[--card-spacing:--spacing(5)]">
       <CardHeader>
-        <CardTitle className="type-card-title">Add an administrator</CardTitle>
-        <CardDescription>
+        <CardTitle className="type-card-title flex items-center gap-2">
+          <UserPlusIcon aria-hidden="true" className="size-4 text-primary" />
+          Add an administrator
+        </CardTitle>
+        <CardDescription className="max-w-prose">
           Create the account first in Supabase Authentication with a confirmed
           email, then look it up here. Only use accounts created for
           administration.
@@ -84,67 +113,89 @@ export function LookupGrant() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {notice ? (
-          <p role="status" className="type-helper text-muted-foreground">
+          <InlineMessage tone="success" role="status">
             {notice}
-          </p>
+          </InlineMessage>
         ) : null}
 
         <form
           key={formKey}
           onSubmit={onSearch}
-          className="flex flex-col gap-2 sm:flex-row sm:items-end"
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
           noValidate
         >
           <div className="flex flex-1 flex-col gap-2">
             <Label htmlFor="lookup-email" className="type-label">
               Account email
             </Label>
-            <Input
-              id="lookup-email"
-              name="email"
-              type="email"
-              autoComplete="off"
-              required
-              disabled={searching || granting}
-            />
+            <div className="relative">
+              <SearchIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                id="lookup-email"
+                name="email"
+                type="email"
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                placeholder="name@example.com"
+                required
+                disabled={searching || granting}
+                className="h-9 pl-9"
+              />
+            </div>
           </div>
-          <Button type="submit" disabled={searching || granting}>
+          <Button
+            type="submit"
+            size="lg"
+            className="px-4 sm:min-w-28"
+            disabled={searching || granting}
+            aria-busy={searching}
+          >
+            {searching ? (
+              <LoaderCircleIcon aria-hidden="true" className="animate-spin" />
+            ) : null}
             {searching ? "Looking up…" : "Look up"}
           </Button>
         </form>
 
         {result && !result.ok ? (
-          <p role="alert" className="type-helper text-destructive">
+          <InlineMessage tone="error" role="alert">
             {result.message}
-          </p>
+          </InlineMessage>
         ) : null}
 
         {result?.ok && result.user === null ? (
-          <p className="type-helper text-muted-foreground">
+          <InlineMessage tone="neutral">
             No account with that email exists. Create it in Supabase
             Authentication first.
-          </p>
+          </InlineMessage>
         ) : null}
 
         {user ? (
-          <div className="flex flex-col gap-4 rounded-lg border p-4">
-            <dl className="type-body grid gap-1 sm:grid-cols-[auto_1fr] sm:gap-x-4">
-              <dt className="text-muted-foreground">Email</dt>
-              <dd className="break-all">{user.email}</dd>
-              <dt className="text-muted-foreground">Created</dt>
-              <dd>{formatUtc(user.createdAt)}</dd>
-              <dt className="text-muted-foreground">Last sign-in</dt>
-              <dd>{formatUtc(user.lastSignInAt)}</dd>
+          <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
+            <dl className="flex flex-col gap-3 sm:gap-2">
+              <SummaryRow label="Email" breakAll>
+                {user.email}
+              </SummaryRow>
+              <SummaryRow label="Created">
+                {formatUtc(user.createdAt)}
+              </SummaryRow>
+              <SummaryRow label="Last sign-in">
+                {formatUtc(user.lastSignInAt)}
+              </SummaryRow>
             </dl>
 
             {blocked ? (
-              <p role="alert" className="type-helper text-destructive">
+              <InlineMessage tone="warning" role="alert">
                 {blocked}
-              </p>
+              </InlineMessage>
             ) : (
               <form
                 onSubmit={onGrant}
-                className="flex flex-col gap-3"
+                className="flex flex-col gap-4 border-t pt-4"
                 noValidate
               >
                 <input type="hidden" name="target" value={user.userId} />
@@ -157,6 +208,7 @@ export function LookupGrant() {
                     name="role"
                     defaultValue={ASSIGNABLE_ROLES[0]}
                     disabled={granting}
+                    className="h-9! sm:max-w-xs"
                   >
                     {ASSIGNABLE_ROLES.map((role) => (
                       <option key={role} value={role}>
@@ -176,18 +228,36 @@ export function LookupGrant() {
                     maxLength={500}
                     required
                     disabled={granting}
+                    aria-describedby="grant-reason-help"
                   />
-                  <p className="type-helper text-muted-foreground">
+                  <p
+                    id="grant-reason-help"
+                    className="type-helper text-muted-foreground"
+                  >
                     Saved in the audit log. 10 to 500 characters.
                   </p>
                 </div>
                 {grantError ? (
-                  <p role="alert" className="type-helper text-destructive">
+                  <InlineMessage tone="error" role="alert">
                     {grantError}
-                  </p>
+                  </InlineMessage>
                 ) : null}
                 <div>
-                  <Button type="submit" disabled={granting}>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="px-4"
+                    disabled={granting}
+                    aria-busy={granting}
+                  >
+                    {granting ? (
+                      <LoaderCircleIcon
+                        aria-hidden="true"
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <ShieldCheckIcon aria-hidden="true" />
+                    )}
                     {granting ? "Granting…" : "Grant access"}
                   </Button>
                 </div>
