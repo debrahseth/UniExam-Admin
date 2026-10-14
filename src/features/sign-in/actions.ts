@@ -45,6 +45,8 @@ export async function signIn(
     return { error: GENERIC_ERROR };
   }
 
+  if (access.state === "mfa_enrollment_required") redirect("/mfa/enroll");
+  if (access.state === "mfa_step_up_required") redirect("/mfa/verify");
   redirect("/admin");
 }
 

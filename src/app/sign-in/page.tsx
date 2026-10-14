@@ -37,9 +37,10 @@ const CONTEXT_POINTS = [
 
 export default async function SignInPage() {
   const access = await getMyAccess();
-  if (access.state !== "none" && access.state !== "suspended") {
+  if (access.state === "mfa_enrollment_required") redirect("/mfa/enroll");
+  if (access.state === "mfa_step_up_required") redirect("/mfa/verify");
+  if (access.state !== "none" && access.state !== "suspended")
     redirect("/admin");
-  }
 
   return (
     <main className="grid min-h-svh lg:grid-cols-[5fr_6fr]">

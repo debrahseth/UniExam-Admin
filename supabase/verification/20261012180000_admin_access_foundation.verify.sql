@@ -52,14 +52,19 @@ select 'function', proname from pg_proc
 --     public tables, columns, RLS flags, table/sequence ACLs, policies,
 --     function definitions and ACLs, triggers, enums and default privileges,
 --     excluding only the objects this migration creates.
-with new_tables as (select unnest(array['admin_users','admin_audit_log','admin_audit_log_id_seq']) as n),
+with new_tables as (select unnest(array['admin_users','admin_audit_log','admin_audit_log_id_seq','admin_question_versions','admin_activity_log','admin_activity_log_id_seq']) as n),
 new_funcs as (select unnest(array[
   'admin_internal_lock','admin_internal_check_reason','admin_internal_session_state',
   'admin_internal_require_actor','admin_internal_audit','admin_internal_audit_hash',
   'admin_block_trg','admin_audit_chain_trg','admin_users_guard_trg','admin_users_require_audit_trg',
   'admin_get_my_access','admin_grant_role','admin_change_role','admin_suspend','admin_reactivate',
   'admin_revoke','admin_list_admins','admin_list_audit','admin_bootstrap_super_admin',
-  'admin_verify_audit_chain','admin_find_user_by_email']) as n),
+  'admin_verify_audit_chain','admin_find_user_by_email','admin_question_create_draft',
+  'admin_question_create_version','admin_question_update_draft','admin_question_submit',
+  'admin_question_discard_draft','admin_question_approve','admin_question_reject',
+  'admin_question_retire','admin_question_restore','admin_question_list','admin_question_get',
+  'admin_internal_log_activity','admin_internal_build_question','admin_internal_require_role',
+  'admin_internal_lock_shared','admin_qv_guard_trg']) as n),
 parts as (
   select 'rel:' || c.relname || ':' || c.relkind::text || ':' || c.relrowsecurity::text || ':' || coalesce(c.relacl::text, '') as s
     from pg_class c
@@ -86,7 +91,7 @@ parts as (
   union all
   select 'enum:' || t.typname || ':' || string_agg(e.enumlabel, ',' order by e.enumsortorder)
     from pg_type t join pg_enum e on e.enumtypid = t.oid
-    where t.typnamespace = 'public'::regnamespace and t.typname not in ('admin_role', 'admin_status')
+    where t.typnamespace = 'public'::regnamespace and t.typname not in ('admin_role', 'admin_status','admin_review_state')
     group by t.typname
   union all
   select 'defacl:' || d.defaclrole::regrole::text || ':' || d.defaclnamespace::regnamespace::text || ':' || d.defaclobjtype::text || ':' || d.defaclacl::text

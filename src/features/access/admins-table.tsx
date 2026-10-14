@@ -3,7 +3,8 @@
 import { LoaderCircleIcon, LockIcon, MoreHorizontalIcon } from "lucide-react";
 import { useState, useTransition, type FormEvent } from "react";
 
-import { NativeSelect, TextArea } from "@/components/shell/form-fields";
+import { TextArea } from "@/components/shell/form-fields";
+import { RoleSelect } from "./role-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -150,19 +151,13 @@ function ManageForm({
           <Label htmlFor="manage-role" className="type-label">
             New role
           </Label>
-          <NativeSelect
+          <RoleSelect
             id="manage-role"
             name="role"
+            roles={roles}
             defaultValue={roles[0]}
             disabled={busy}
-            className="h-9!"
-          >
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {ROLE_LABELS[role]}
-              </option>
-            ))}
-          </NativeSelect>
+          />
         </div>
       ) : null}
 

@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 
-import { NativeSelect, TextArea } from "@/components/shell/form-fields";
+import { TextArea } from "@/components/shell/form-fields";
+import { RoleSelect } from "./role-select";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -203,19 +204,14 @@ export function LookupGrant() {
                   <Label htmlFor="grant-role" className="type-label">
                     Role
                   </Label>
-                  <NativeSelect
+                  <RoleSelect
                     id="grant-role"
                     name="role"
+                    roles={ASSIGNABLE_ROLES}
                     defaultValue={ASSIGNABLE_ROLES[0]}
                     disabled={granting}
-                    className="h-9! sm:max-w-xs"
-                  >
-                    {ASSIGNABLE_ROLES.map((role) => (
-                      <option key={role} value={role}>
-                        {ROLE_LABELS[role]}
-                      </option>
-                    ))}
-                  </NativeSelect>
+                    className="w-full"
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="grant-reason" className="type-label">
