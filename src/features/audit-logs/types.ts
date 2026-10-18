@@ -15,7 +15,7 @@ export type AuditEntry = {
   reason: string;
 };
 
-export type Person = { label: string; known: boolean };
+export type Person = { id: string; label: string; known: boolean };
 
 export type AuditRow = {
   id: number;

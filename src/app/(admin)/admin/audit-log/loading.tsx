@@ -30,7 +30,8 @@ export default function AuditLogLoading() {
               { head: "w-8", cell: "h-4 w-36" },
               { head: "w-14", cell: "h-4 w-36" },
               { head: "w-14", cell: "h-4 w-40" },
-              { head: "w-14", cell: "h-4 w-52" },
+              { head: "w-14", cell: "h-4 w-44" },
+              { head: null, cell: "ml-auto size-8" },
             ]}
           />
 

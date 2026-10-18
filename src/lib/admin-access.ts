@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import type { AdminRole } from "@/config/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -36,10 +38,12 @@ const NO_ACCESS: AdminAccess = { state: "none" };
 export async function readContext(
   supabase: SupabaseServerClient,
 ): Promise<AdminContext> {
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return { access: NO_ACCESS, email: null };
+  const { data: claimsData, error: claimsError } =
+    await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (claimsError || !claims) return { access: NO_ACCESS, email: null };
 
-  const email = userData.user.email ?? null;
+  const email = typeof claims.email === "string" ? claims.email : null;
 
   const { data, error } = await supabase.rpc("admin_get_my_access");
   if (error || !Array.isArray(data) || data.length !== 1) {
@@ -72,10 +76,11 @@ export async function readAccess(
   return (await readContext(supabase)).access;
 }
 
-export async function getMyAccess(): Promise<AdminAccess> {
-  return readAccess(await createSupabaseServerClient());
-}
+export const getAdminContext = cache(
+  async (): Promise<AdminContext> =>
+    readContext(await createSupabaseServerClient()),
+);
 
-export async function getAdminContext(): Promise<AdminContext> {
-  return readContext(await createSupabaseServerClient());
-}
+export const getMyAccess = cache(
+  async (): Promise<AdminAccess> => (await getAdminContext()).access,
+);

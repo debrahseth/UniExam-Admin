@@ -76,7 +76,7 @@ export default async function SignInPage() {
       </div>
 
       <div className="flex items-center justify-center px-4 py-10 sm:px-8">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <Brand />
           </div>

@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
   });
 
   try {
-    await supabase.auth.getUser();
+    await supabase.auth.getClaims();
   } catch {}
 
   response.headers.set("Cache-Control", "private, no-store");

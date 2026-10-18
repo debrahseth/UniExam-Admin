@@ -184,25 +184,28 @@ export function EnrollForm() {
         <ErrorMessage>{start.message}</ErrorMessage>
       ) : null}
 
-      <form action={startAction}>
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          variant={start.status === "ready" ? "outline" : "default"}
-          disabled={starting}
-          aria-busy={starting}
-        >
-          {starting ? (
-            <LoaderCircleIcon aria-hidden="true" className="animate-spin" />
-          ) : null}
-          {starting
-            ? "Preparing…"
-            : start.status === "ready"
-              ? "Start over"
-              : "Begin setup"}
-        </Button>
-      </form>
+      <div className="flex gap-4">
+        <div aria-hidden="true" className="size-6 shrink-0" />
+        <form action={startAction} className="min-w-0 flex-1">
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            variant={start.status === "ready" ? "outline" : "default"}
+            disabled={starting}
+            aria-busy={starting}
+          >
+            {starting ? (
+              <LoaderCircleIcon aria-hidden="true" className="animate-spin" />
+            ) : null}
+            {starting
+              ? "Preparing…"
+              : start.status === "ready"
+                ? "Start over"
+                : "Begin setup"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

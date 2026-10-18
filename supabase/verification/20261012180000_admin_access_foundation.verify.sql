@@ -64,7 +64,9 @@ new_funcs as (select unnest(array[
   'admin_question_discard_draft','admin_question_approve','admin_question_reject',
   'admin_question_retire','admin_question_restore','admin_question_list','admin_question_get',
   'admin_internal_log_activity','admin_internal_build_question','admin_internal_require_role',
-  'admin_internal_lock_shared','admin_qv_guard_trg']) as n),
+  'admin_internal_lock_shared','admin_qv_guard_trg','admin_internal_question_base',
+  'admin_question_search','admin_question_counts','admin_question_history','admin_internal_filter_match',
+  'admin_catalog_programmes','admin_catalog_courses','admin_catalog_topics','admin_topic_questions']) as n),
 parts as (
   select 'rel:' || c.relname || ':' || c.relkind::text || ':' || c.relrowsecurity::text || ':' || coalesce(c.relacl::text, '') as s
     from pg_class c

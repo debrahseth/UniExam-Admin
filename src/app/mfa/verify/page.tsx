@@ -18,7 +18,7 @@ export default async function VerifyPage() {
 
   return (
     <main className="flex min-h-svh items-center justify-center px-4 py-10 sm:px-8">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-5xl">
         <div className="mb-8 flex items-center gap-2.5">
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <GraduationCapIcon aria-hidden="true" className="size-5" />

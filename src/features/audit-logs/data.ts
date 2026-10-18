@@ -44,8 +44,8 @@ export async function loadAuditPage(
   const who = (id: string): Person => {
     const email = emails.get(id);
     return email
-      ? { label: email, known: true }
-      : { label: shortId(id), known: false };
+      ? { id, label: email, known: true }
+      : { id, label: shortId(id), known: false };
   };
 
   const rawRows = auditResult.data as unknown[];
