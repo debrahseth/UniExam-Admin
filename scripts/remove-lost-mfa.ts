@@ -23,9 +23,9 @@ const supabase = createClient(url, serviceRoleKey, {
 
 async function main() {
   // userId is replaced
-  const userId = "196efb90-f3a7-4fb6-908c-5f6dc00743ae";
+  const userId = "User ID";
   // replace it with the factor you get from the first file
-  const factorId = "7b638247-4091-4761-8202-675ae2ac7063";
+  const factorId = "Factor ID";
 
   const { error } = await supabase.auth.admin.mfa.deleteFactor({
     userId,

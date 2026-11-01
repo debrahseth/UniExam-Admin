@@ -321,12 +321,21 @@ begin
     $q$select 'ok' from public.admin_question_search(p_limit => 1) limit 1$q$, 'ANY');
   perform pg_temp.t('academic admin can count', 'academic',
     $q$select 'ok' from public.admin_question_counts() limit 1$q$, 'ANY');
-  perform pg_temp.t('there are 41 admin functions in total', 'op',
+
+  -- Function-count tripwire. These two numbers are deliberately pinned: an
+  -- unexpected new admin function (or a new one callable by signed-in users)
+  -- must fail here so it is noticed. Update them on purpose in the same change
+  -- as any migration that adds or drops admin functions, and say which
+  -- migration moved them:
+  --   after 20261015090000_admin_question_search:  41 total, 23 callable
+  --   after 20261016120000_admin_review_catalog:  46 total, 27 callable
+  --   (step 7 drops admin_question_list: expect these to move again)
+  perform pg_temp.t('there are 46 admin functions in total', 'op',
     $q$select count(*)::text from pg_proc where pronamespace = 'public'::regnamespace and proname like 'admin\_%' escape '\'$q$,
-    '41');
-  perform pg_temp.t('signed-in users can call exactly 23 of them', 'op',
+    '46');
+  perform pg_temp.t('signed-in users can call exactly 27 of them', 'op',
     $q$select count(*)::text from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like 'admin\_%' escape '\' and has_function_privilege('authenticated', p.oid, 'execute')$q$,
-    '23');
+    '27');
 
   -- B. Validation ----------------------------------------------------------
   perform pg_temp.t('an unknown view is refused', 'academic',

@@ -17,7 +17,7 @@ const ERRORS: Record<string, string> = {
   invalid_reason: "Enter a reason of 10 to 500 characters.",
   target_not_found: "That question version no longer exists.",
   invalid_state:
-    "This question isn't in a state that allows that. Reload the page to see its current status.",
+    "This question isn't in a state that allows that. It may have just been changed by someone else.",
   cannot_review_own:
     "You wrote this version, so someone else has to review it.",
   question_retired: "This question is retired. Restore it first.",
@@ -55,8 +55,9 @@ const INTENTS: readonly QuestionIntent[] = [
   "restore",
 ];
 
-const SUCCESS: Record<Exclude<QuestionIntent, "discard">, string> = {
+const SUCCESS: Record<QuestionIntent, string> = {
   submit: "Submitted for review.",
+  discard: "Draft discarded.",
   approve: "Approved and published.",
   reject: "Rejected. The author can see your reason.",
   retire: "Question retired.",
@@ -74,6 +75,8 @@ export async function runQuestionAction(
     return fail(GENERIC_ERROR);
   }
   const action = intent as QuestionIntent;
+
+  const after = formData.get("after") === "stay" ? "stay" : "list";
 
   const needsReason =
     action === "reject" || action === "retire" || action === "restore";
@@ -129,7 +132,7 @@ export async function runQuestionAction(
 
   revalidatePath("/admin/questions", "layout");
 
-  if (action === "discard") redirect("/admin/questions");
+  if (action === "discard" && after === "list") redirect("/admin/questions");
 
   return { ok: true, message: SUCCESS[action] };
 }

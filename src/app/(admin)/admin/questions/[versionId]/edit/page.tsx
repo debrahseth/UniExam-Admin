@@ -16,7 +16,7 @@ import {
 import { isUuid, toQuestionDetail } from "@/features/questions/helpers";
 import { QuestionEditor } from "@/features/questions/editor/question-editor";
 
-export const metadata: Metadata = { title: "Edit question" };
+export const metadata: Metadata = { title: "Edit Question" };
 
 export default async function EditQuestionPage({
   params,

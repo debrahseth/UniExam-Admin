@@ -18,47 +18,53 @@ export function QuestionPreview({
   options,
   correctId,
   explanation,
+  show = "both",
 }: {
   stem: string;
   options: QuestionOption[];
   correctId: string | null;
   explanation: string | null;
+  show?: "both" | "review";
 }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="[--card-spacing:--spacing(5)]">
-        <CardHeader>
-          <CardTitle className="type-card-title">During the exam</CardTitle>
-          <CardDescription>
-            Options are labelled by position. Line breaks in the question are
-            not shown.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-lg leading-relaxed font-medium wrap-anywhere">
-            {stem}
-          </p>
-          <div className="flex flex-col gap-3">
-            {options.map((option, i) => (
-              <div
-                key={option.id}
-                className="flex items-start gap-3 rounded-lg border bg-card p-4"
-              >
-                <span
-                  aria-hidden="true"
-                  className="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-muted-foreground"
+    <div className={cn("grid gap-4", show === "both" && "lg:grid-cols-2")}>
+      {show === "both" ? (
+        <Card className="[--card-spacing:--spacing(5)]">
+          <CardHeader>
+            <CardTitle className="type-card-title">During the exam</CardTitle>
+            <CardDescription>
+              Options are labelled by position. Line breaks in the question are
+              not shown.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <p className="text-lg leading-relaxed font-medium wrap-anywhere">
+              {stem}
+            </p>
+            <div className="flex flex-col gap-3">
+              {options.map((option, i) => (
+                <div
+                  key={option.id}
+                  className="flex items-start gap-3 rounded-lg border bg-card p-4"
                 >
-                  {LETTERS[i] ?? "?"}
-                </span>
-                <span className="text-base leading-relaxed wrap-anywhere">
-                  <span className="sr-only">Option {LETTERS[i] ?? "?"}: </span>
-                  {option.text}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  <span
+                    aria-hidden="true"
+                    className="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-muted-foreground"
+                  >
+                    {LETTERS[i] ?? "?"}
+                  </span>
+                  <span className="text-base leading-relaxed wrap-anywhere">
+                    <span className="sr-only">
+                      Option {LETTERS[i] ?? "?"}:{" "}
+                    </span>
+                    {option.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="[--card-spacing:--spacing(5)]">
         <CardHeader>

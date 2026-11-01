@@ -20,7 +20,7 @@ import { InlineMessage } from "@/features/access/inline-message";
 import { LookupGrant } from "@/features/access/lookup-grant";
 import type { AdminRow } from "@/features/access/types";
 
-export const metadata: Metadata = { title: "Admin access" };
+export const metadata: Metadata = { title: "Admin Access" };
 
 function toAdminRow(row: unknown): AdminRow | null {
   if (typeof row !== "object" || row === null) return null;

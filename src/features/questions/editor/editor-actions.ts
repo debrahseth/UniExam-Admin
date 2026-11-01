@@ -133,7 +133,6 @@ export async function saveQuestion(formData: FormData): Promise<SaveResult> {
     const version = readUuid(formData.get("version"));
     const topic = readUuid(formData.get("topic"));
     if (!version) return fail(GENERIC_ERROR);
-    if (!topic) return fail(ERRORS.invalid_topic);
 
     const { error } = await supabase.rpc("admin_question_update_draft", {
       p_version_id: version,

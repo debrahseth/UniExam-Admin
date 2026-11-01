@@ -2,10 +2,6 @@ import { ShieldAlert } from "lucide-react";
 
 import { StateMessage } from "@/components/shell/state-message";
 
-/**
- * Shown when a signed-in admin lacks the role for a page.
- * Not routed yet: role checks arrive with Milestone 1B.
- */
 export function ForbiddenState() {
   return (
     <StateMessage

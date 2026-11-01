@@ -2,7 +2,7 @@ import { GraduationCap } from "lucide-react";
 
 import { PlaceholderPage } from "@/components/shell/placeholder-page";
 
-export const metadata = { title: "Academic structure" };
+export const metadata = { title: "Academic Structure" };
 
 export default function AcademicPage() {
   return (

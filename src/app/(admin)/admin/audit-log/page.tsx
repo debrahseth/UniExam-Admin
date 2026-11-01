@@ -18,7 +18,7 @@ import { AuditPagination } from "@/features/audit-logs/audit-pagination";
 import { loadAuditPage } from "@/features/audit-logs/data";
 import { parseBefore } from "@/features/audit-logs/parse";
 
-export const metadata: Metadata = { title: "Audit log" };
+export const metadata: Metadata = { title: "Audit Log" };
 
 export default async function AuditLogPage({
   searchParams,

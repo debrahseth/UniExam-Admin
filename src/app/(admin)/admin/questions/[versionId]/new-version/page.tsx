@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ForbiddenState } from "@/components/shell/forbidden-state";
 import { PageHeader } from "@/components/shell/page-header";
+import { buttonVariants } from "@/components/ui/button";
 import { getAdminContext } from "@/lib/admin-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { InlineMessage } from "@/features/access/inline-message";
 import { BackLink } from "@/features/questions/back-link";
-import { isUuid, toQuestionDetail } from "@/features/questions/helpers";
+import {
+  STATE_LABELS,
+  isUuid,
+  toQuestionDetail,
+} from "@/features/questions/helpers";
 import { QuestionEditor } from "@/features/questions/editor/question-editor";
+import { toHistoryEntry, type HistoryEntry } from "@/features/questions/search";
 
-export const metadata: Metadata = { title: "New version" };
+export const metadata: Metadata = { title: "New Version" };
 
 export default async function NewVersionPage({
   params,
@@ -85,6 +92,42 @@ export default async function NewVersionPage({
           This question has more than 6 options, which the exam screen cannot
           show, so it can&apos;t be copied into the editor.
         </InlineMessage>
+      </div>
+    );
+  }
+
+  const historyResult = await supabase.rpc("admin_question_history", {
+    p_question_id: d.questionId,
+  });
+  const history: HistoryEntry[] = Array.isArray(historyResult.data)
+    ? historyResult.data
+        .map(toHistoryEntry)
+        .filter((e): e is HistoryEntry => e !== null)
+    : [];
+  const open = history.find(
+    (e) =>
+      e.reviewState === "draft" ||
+      e.reviewState === "submitted" ||
+      e.reviewState === "rejected",
+  );
+
+  if (open) {
+    return (
+      <div className="space-y-6">
+        {back}
+        <InlineMessage tone="warning">
+          This question already has an unfinished version (version{" "}
+          {open.version}, {STATE_LABELS[open.reviewState].toLowerCase()}).
+          Finish or discard it before starting another.
+        </InlineMessage>
+        <div>
+          <Link
+            href={`/admin/questions/${open.versionId}`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Open version {open.version}
+          </Link>
+        </div>
       </div>
     );
   }

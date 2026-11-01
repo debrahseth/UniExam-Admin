@@ -5,8 +5,10 @@ import { PageHeader } from "@/components/shell/page-header";
 import { getAdminContext } from "@/lib/admin-access";
 
 import { QuestionEditor } from "@/features/questions/editor/question-editor";
+import { NewQuestionTabs } from "@/features/questions/import/new-question-tabs";
+import { QuestionImport } from "@/features/questions/import/question-import";
 
-export const metadata: Metadata = { title: "New question" };
+export const metadata: Metadata = { title: "New Question" };
 
 export default async function NewQuestionPage() {
   const { access } = await getAdminContext();
@@ -20,23 +22,28 @@ export default async function NewQuestionPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="New question"
-        description="Saved as a draft. You submit it for review from the next page."
+        title="New Question"
+        description="Add one question, or import a whole file. Everything is saved as a draft under your name; you submit it for review afterwards."
       />
-      <QuestionEditor
-        mode="create"
-        topics={[]}
-        initial={{
-          courseId: "",
-          topicId: "",
-          stem: "",
-          options: ["", ""],
-          correctIndex: -1,
-          explanation: "",
-          difficulty: "",
-        }}
-        submitLabel="Save draft"
-        cancelHref="/admin/questions"
+      <NewQuestionTabs
+        single={
+          <QuestionEditor
+            mode="create"
+            topics={[]}
+            initial={{
+              courseId: "",
+              topicId: "",
+              stem: "",
+              options: ["", ""],
+              correctIndex: -1,
+              explanation: "",
+              difficulty: "",
+            }}
+            submitLabel="Save draft"
+            cancelHref="/admin/questions"
+          />
+        }
+        importer={<QuestionImport />}
       />
     </div>
   );

@@ -23,7 +23,7 @@ const supabase = createClient(url, serviceRoleKey, {
 
 async function main() {
   // replace this id with the id of the admin you want to get their mfa factor
-  const userId = "196efb90-f3a7-4fb6-908c-5f6dc00743ae";
+  const userId = "User ID";
 
   const { data, error } = await supabase.auth.admin.mfa.listFactors({ userId });
 

@@ -90,12 +90,16 @@ function ConfirmForm({
   intent,
   versionId,
   questionId,
+  after,
   onDone,
+  onFailed,
 }: {
   intent: QuestionIntent;
   versionId: string;
   questionId: string;
+  after: "list" | "stay";
   onDone: (message: string) => void;
+  onFailed?: () => void;
 }) {
   const copy = COPY[intent];
   const [error, setError] = useState<string | null>(null);
@@ -107,8 +111,12 @@ function ConfirmForm({
     setError(null);
     startTransition(async () => {
       const result = await runQuestionAction(formData);
-      if (result.ok) onDone(result.message);
-      else setError(result.message);
+      if (result.ok) {
+        onDone(result.message);
+      } else {
+        setError(result.message);
+        onFailed?.();
+      }
     });
   }
 
@@ -124,6 +132,7 @@ function ConfirmForm({
       <input type="hidden" name="intent" value={intent} />
       <input type="hidden" name="version" value={versionId} />
       <input type="hidden" name="question" value={questionId} />
+      <input type="hidden" name="after" value={after} />
 
       {copy.reason ? (
         <div className="flex flex-col gap-2">
@@ -180,10 +189,16 @@ export function WorkflowActions({
   versionId,
   questionId,
   allowed,
+  after = "list",
+  onSuccess,
+  onFailure,
 }: {
   versionId: string;
   questionId: string;
   allowed: QuestionIntent[];
+  after?: "list" | "stay";
+  onSuccess?: (intent: QuestionIntent, message: string) => void;
+  onFailure?: () => void;
 }) {
   const [active, setActive] = useState<QuestionIntent | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -227,10 +242,14 @@ export function WorkflowActions({
               intent={active}
               versionId={versionId}
               questionId={questionId}
+              after={after}
               onDone={(message) => {
-                setNotice(message);
+                const done = active;
                 setActive(null);
+                if (onSuccess && done) onSuccess(done, message);
+                else setNotice(message);
               }}
+              onFailed={onFailure}
             />
           ) : null}
         </DialogContent>

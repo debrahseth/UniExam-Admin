@@ -1,5 +1,6 @@
 import { AppBreadcrumbs } from "@/components/shell/app-breadcrumbs";
 import { SignOutButton } from "@/components/shell/sign-out-button";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -19,6 +20,7 @@ export function AppHeader({ email }: { email: string | null }) {
             <span className="truncate">{email}</span>
           </Badge>
         ) : null}
+        <ThemeToggle />
         <SignOutButton />
       </div>
     </header>

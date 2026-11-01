@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { GraduationCapIcon } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 
 import { ForbiddenState } from "@/components/shell/forbidden-state";
 import { PageHeader } from "@/components/shell/page-header";
@@ -8,169 +8,90 @@ import { buttonVariants } from "@/components/ui/button";
 import { getAdminContext } from "@/lib/admin-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import { InlineMessage } from "@/features/access/inline-message";
+import { ProgrammeBrowser } from "@/features/questions/review/programme-browser";
 import {
-  toCourseOption,
-  toTopicOption,
-  type TopicOption,
-} from "@/features/questions/editor/catalog";
-import { first, isUuid } from "@/features/questions/helpers";
-import { loadCounts, type ListFilters } from "@/features/questions/list-data";
-import { QuestionFilters } from "@/features/questions/question-filters";
-import {
-  QuestionResults,
-  QuestionResultsSkeleton,
-} from "@/features/questions/question-results";
-import {
-  CURSOR_AT,
-  buildListHref,
-  defaultViewFor,
-  isListView,
-  listRoleOf,
-  viewsFor,
-  type ListView,
-} from "@/features/questions/search";
-import { ViewTabs, ViewTabsFallback } from "@/features/questions/view-tabs";
+  toProgramme,
+  type Programme,
+} from "@/features/questions/review/programmes";
 
-export const metadata: Metadata = { title: "Questions" };
+export const metadata: Metadata = { title: "Programme" };
 
-export default async function QuestionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function QuestionsPage() {
   const { access } = await getAdminContext();
-  const listRole = access.state === "active" ? listRoleOf(access.role) : null;
-  if (!listRole) return <ForbiddenState />;
+  if (
+    access.state !== "active" ||
+    (access.role !== "super_admin" &&
+      access.role !== "academic_admin" &&
+      access.role !== "question_reviewer")
+  ) {
+    return <ForbiddenState />;
+  }
 
-  const canAuthor = listRole === "super_admin" || listRole === "academic_admin";
-  const tabs = viewsFor(listRole);
+  const canAuthor =
+    access.role === "super_admin" || access.role === "academic_admin";
 
-  const params = await searchParams;
-
-  const rawView = first(params.view);
-  const view: ListView =
-    isListView(rawView) && tabs.includes(rawView)
-      ? rawView
-      : defaultViewFor(listRole);
-
-  const rawQuery = (first(params.q) ?? "").trim().slice(0, 100);
-  const searchText = rawQuery.length >= 2 ? rawQuery : undefined;
-  const queryTooShort = rawQuery.length === 1;
-
-  const rawCourse = first(params.course);
-  const course = rawCourse && isUuid(rawCourse) ? rawCourse : undefined;
-  const rawTopic = first(params.topic);
-  const topic = course && rawTopic && isUuid(rawTopic) ? rawTopic : undefined;
-  const rawDifficulty = first(params.difficulty);
-  const difficulty =
-    rawDifficulty === "easy" ||
-    rawDifficulty === "medium" ||
-    rawDifficulty === "hard"
-      ? rawDifficulty
-      : undefined;
-
-  const rawAt = first(params.at);
-  const rawId = first(params.id);
-  const cursor =
-    rawAt && CURSOR_AT.test(rawAt) && rawId && isUuid(rawId)
-      ? {
-          at: rawAt,
-          id: rawId,
-          dir:
-            first(params.dir) === "prev"
-              ? ("prev" as const)
-              : ("next" as const),
-        }
-      : undefined;
-
-  const filters: ListFilters = { q: searchText, course, topic, difficulty };
-  const hasFilters = Boolean(rawQuery || course || topic || difficulty);
-
-  const countsPromise = loadCounts(filters);
+  const header = (
+    <PageHeader
+      title="Programme"
+      description="Choose a programme to browse its courses and review their questions."
+      actions={
+        canAuthor ? (
+          <Link
+            href="/admin/questions/new"
+            className={buttonVariants({ size: "lg" })}
+          >
+            New question
+          </Link>
+        ) : undefined
+      }
+    />
+  );
 
   const supabase = await createSupabaseServerClient();
-  const [courseResult, topicResult] = await Promise.all([
-    course
-      ? supabase
-          .from("courses")
-          .select("id, code, title")
-          .eq("id", course)
-          .maybeSingle()
-      : null,
-    course
-      ? supabase
-          .from("topics")
-          .select("id, course_id, title")
-          .eq("course_id", course)
-          .order("sort_order")
-          .limit(500)
-      : null,
-  ]);
+  const { data, error } = await supabase.rpc("admin_catalog_programmes");
 
-  const selectedCourse =
-    courseResult && !courseResult.error
-      ? toCourseOption(courseResult.data)
-      : null;
-  const topics: TopicOption[] =
-    topicResult && !topicResult.error && Array.isArray(topicResult.data)
-      ? topicResult.data
-          .map(toTopicOption)
-          .filter((t): t is TopicOption => t !== null)
-      : [];
+  if (error || !Array.isArray(data)) {
+    return (
+      <div className="space-y-6">
+        {header}
+        <InlineMessage tone="error" role="alert">
+          The programmes could not be loaded. Reload the page. If this keeps
+          happening, sign out and sign in again.
+        </InlineMessage>
+      </div>
+    );
+  }
 
-  const listKey = buildListHref({ view, ...filters, cursor });
+  const programmes = data
+    .map(toProgramme)
+    .filter((p): p is Programme => p !== null);
+  const skipped = data.length - programmes.length;
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Questions"
-        description="Search, review and manage the question bank."
-        actions={
-          canAuthor ? (
-            <Link href="/admin/questions/new" className={buttonVariants()}>
-              New question
-            </Link>
-          ) : undefined
-        }
-      />
+      {header}
 
-      <QuestionFilters
-        view={view}
-        initialQuery={rawQuery}
-        initialCourse={selectedCourse}
-        initialTopics={topics}
-        initialTopic={topic ?? ""}
-        initialDifficulty={difficulty ?? ""}
-        clearHref={buildListHref({ view })}
-        hasFilters={hasFilters}
-        queryTooShort={queryTooShort}
-      />
+      {skipped > 0 ? (
+        <InlineMessage tone="error" role="alert">
+          {skipped} {skipped === 1 ? "programme" : "programmes"} could not be
+          displayed.
+        </InlineMessage>
+      ) : null}
 
-      <Suspense
-        key={`tabs:${listKey}`}
-        fallback={
-          <ViewTabsFallback tabs={tabs} view={view} filters={filters} />
-        }
-      >
-        <ViewTabs
-          tabs={tabs}
-          view={view}
-          filters={filters}
-          countsPromise={countsPromise}
-        />
-      </Suspense>
-
-      <Suspense
-        key={`results:${listKey}`}
-        fallback={<QuestionResultsSkeleton />}
-      >
-        <QuestionResults
-          view={view}
-          filters={filters}
-          cursor={cursor}
-          hasFilters={hasFilters}
-        />
-      </Suspense>
+      {programmes.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-10 text-center">
+          <GraduationCapIcon
+            aria-hidden="true"
+            className="size-5 text-muted-foreground"
+          />
+          <p className="type-body text-muted-foreground">
+            There are no programmes yet.
+          </p>
+        </div>
+      ) : (
+        <ProgrammeBrowser programmes={programmes} />
+      )}
     </div>
   );
 }

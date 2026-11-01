@@ -14,7 +14,6 @@ type PlaceholderPageProps = {
   title: string;
   description: string;
   icon: LucideIcon;
-  /** Where this area is planned, e.g. "Milestone 1B" or "a later milestone". */
   planned: string;
 };
 

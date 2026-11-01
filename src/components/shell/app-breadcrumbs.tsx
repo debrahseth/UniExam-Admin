@@ -14,7 +14,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import { routeTitles } from "@/config/navigation";
 
-function titleFor(href: string, segment: string) {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const STRUCTURAL = new Set(["programmes", "courses"]);
+
+function titleFor(href: string, segment: string, previous: string | undefined) {
+  if (UUID.test(segment)) {
+    if (previous === "programmes") return "Course";
+    if (previous === "courses") return "Topic";
+    if (previous === "questions") return "Programme";
+    return "Details";
+  }
   return (
     routeTitles[href] ??
     segment.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase())
@@ -25,10 +35,11 @@ export function AppBreadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
-  // Skip the leading "admin" segment; the Dashboard crumb stands in for it.
-  const crumbs = segments.slice(1).map((segment, i) => {
+  const rest = segments.slice(1);
+  const crumbs = rest.flatMap((segment, i) => {
+    if (STRUCTURAL.has(segment) && i < rest.length - 1) return [];
     const href = "/" + segments.slice(0, i + 2).join("/");
-    return { href, title: titleFor(href, segment) };
+    return [{ href, title: titleFor(href, segment, segments[i]) }];
   });
 
   if (crumbs.length === 0) {
